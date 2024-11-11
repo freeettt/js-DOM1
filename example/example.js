@@ -1,39 +1,72 @@
-// Отримати елемент за ID
-const title = document.getElementById('title');
-console.log('Елемент за ID:', title);
+const display = document.querySelector(".display");
+const historyDisplay = document.querySelector("#history");
+const buttons = document.querySelectorAll("button");
+let currentInput = '';
+let history = '';
+let hasOperator = false;
 
-// Змінити текст заголовка через 3 секунди
-setTimeout(() => {
-    title.textContent = 'DOM у дії!';
-}, 3000);
+const updateDisplay = (value) => {
+  display.value = value;
+};
 
-// Отримати всі елементи з класом 'item'
-const items = document.getElementsByClassName('item');
-console.log('Елементи з класом "item":', items);
+const updateHistoryDisplay = (value) => {
+  historyDisplay.textContent = value;
+};
 
-// Змінити текст другого пункту
-if (items.length > 1) {
-    items[1].textContent = 'Змінений пункт 2';
-}
+const resetCalculator = () => {
+  currentInput = '';
+  history = '';
+  hasOperator = false;
+  updateDisplay('');
+  updateHistoryDisplay('');
+};
 
-// Отримати перший елемент списку за селектором
-const firstItem = document.querySelector('#itemList .item');
-console.log('Перший пункт списку:', firstItem);
+const deleteLastChar = () => {
+  currentInput = currentInput.slice(0, -1);
+  updateDisplay(currentInput || '0');
+};
 
-// Додати обробник події для кнопки зміни тексту
-document.getElementById('changeTextButton').addEventListener('click', function() {
-    title.textContent = 'Текст змінився!';
-});
+const performCalculation = () => {
+  try {
+    let result = eval(history);
+    result = result % 1 === 0 ? result : result.toFixed(2);
+    updateDisplay(result);
+    currentInput = result.toString();
+    history = currentInput;
+    hasOperator = false;
+  } catch (error) {
+    updateDisplay("Error!");
+    resetCalculator();
+  }
+};
 
-const arrayOfItems = document.getElementsByClassName('item');
-console.log(arrayOfItems.length, "FLJKSNfKSNf")
+const handleOperator = (operator) => {
+  if (currentInput === '' && operator !== '-') return;
+  if (hasOperator) history = history.slice(0, -1);
+  history += currentInput + operator;
+  updateHistoryDisplay(history);
+  currentInput = '';
+  hasOperator = true;
+};
 
-// Додати обробник події для кнопки додавання пункту
-document.getElementById('addItemButton').addEventListener('click', function() {
-    const newItem = document.createElement('li');
-    const arrayOfItems = document.getElementsByClassName('item');
-    console.log(arrayOfItems.length, "FLJKSNfKSNf")
-    newItem.textContent = `Новий пункт ${arrayOfItems.length + 1}`;
-    newItem.className = 'item';
-    document.getElementById('itemList').appendChild(newItem);
+const handleButtonClick = (value) => {
+  if (value === "AC") {
+    resetCalculator();
+  } else if (value === "DEL") {
+    deleteLastChar();
+  } else if (value === "=") {
+    if (!hasOperator || currentInput === '') return;
+    history += currentInput;
+    performCalculation();
+    updateHistoryDisplay('');
+  } else if (["+", "-", "*", "/"].includes(value)) {
+    handleOperator(value);
+  } else {
+    currentInput += value;
+    updateDisplay(currentInput);
+  }
+};
+
+buttons.forEach((button) => {
+  button.addEventListener("click", (e) => handleButtonClick(e.target.dataset.value));
 });
